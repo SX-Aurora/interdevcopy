@@ -1,0 +1,125 @@
+probe libinterdevcopy.devicememory.register_type = process("@libdir@/libinterdevcopy.so.1").mark("devicememory_register_type") {
+	memory_type = $arg1;
+}
+
+probe libinterdevcopy.devicememory.create = process("@libdir@/libinterdevcopy.so.1").mark("devicememory_create") {
+	ptr = $arg1;
+	size = $arg2;
+	name = user_string($arg3);
+	device_memory_region = $arg4;
+}
+
+probe libinterdevcopy.channel.register_type = process("@libdir@/libinterdevcopy.so.1").mark("channel_register_type") {
+	destination_type = user_string($arg1);
+	source_type = user_string($arg2);
+	copy_channel_getter = user_string($arg3);
+}
+
+probe libinterdevcopy.channel.create.destination_type_not_found = process("@libdir@/libinterdevcopy.so.1").mark("channel_destination_type_not_found") {
+	destination_type = user_string($arg1);
+}
+
+probe libinterdevcopy.channel.create.source_type_not_found = process("@libdir@/libinterdevcopy.so.1").mark("channel_source_type_not_found") {
+	destination_type = user_string($arg1);
+	source_type = user_string($arg2);
+}
+
+probe libinterdevcopy.channel.create.getter_found = process("@libdir@/libinterdevcopy.so.1").mark("channel_getter_found") {
+	destination_type = user_string($arg1);
+	source_type = user_string($arg2);
+	getter_type = user_string($arg3);
+}
+
+probe libinterdevcopy.channel.create = process("@libdir@/libinterdevcopy.so.1").mark("channel_create") {
+	destination = $arg1;
+	source = $arg2;
+	channel = $arg3;
+}
+
+probe libinterdevcopy.channel.gpuve.register_gpu_mem = process("@libdir@/libinterdevcopy.so.1").mark("channel_gpuve_register_gpu_mem") {
+	vaddr = $arg1;
+	size = $arg2;
+	vehva = $arg3;
+	remain = $arg4;
+}
+
+probe libinterdevcopy.channel.gpuve.register_ve_mem = process("@libdir@/libinterdevcopy.so.1").mark("channel_gpuve_register_ve_mem") {
+	vaddr = $arg1;
+	size = $arg2;
+	vehva = $arg3;
+}
+
+probe libinterdevcopy.channel.gpuve.copy_first_gpu_area = process("@libdir@/libinterdevcopy.so.1").mark("channel_gpuve_copy_first_gpu_area") {
+	resource = $arg1;
+	gpu_offset = $arg2;
+	area_vehva = $arg3;
+	area_offset = $arg4;
+}
+
+probe libinterdevcopy.channel.gpuve.push_dma_addr_start = process("@libdir@/libinterdevcopy.so.1").mark("channel_gpuve_push_dma_addr_start") {
+	addr_list = $arg1;
+	gpu_addr = $arg2;
+	ve_addr = $arg3;
+	size = $arg4;
+}
+
+probe libinterdevcopy.channel.gpuve.push_dma_addr = process("@libdir@/libinterdevcopy.so.1").mark("channel_gpuve_push_dma_addr") {
+	addr_list = $arg1;
+	gpu_addr = $arg2;
+	ve_addr = $arg3;
+	size = $arg4;
+}
+
+/**
+ * see enum DMADirection in CopyGPUVE.cpp.
+ */
+function gpuve_dma_direction:string(dir: long) {
+	if (dir == 0)
+		return "FromGPUToVE";
+	else if (dir == 1)
+		return "FromVEToGPU";
+	else
+		return sprintf("Unexpected(%d)", dir);
+}
+
+probe libinterdevcopy.channel.gpuve.try_to_post.start = process("@libdir@/libinterdevcopy.so.1").mark("channel_gpuve_try_to_post_start") {
+	direction = gpuve_dma_direction($arg1);
+	number_of_areas = $arg2;
+}
+
+probe libinterdevcopy.channel.gpuve.try_to_post.pop_request_area = process("@libdir@/libinterdevcopy.so.1").mark("channel_gpuve_pop_request_area") {
+	direction = gpuve_dma_direction($arg1);
+}
+
+probe libinterdevcopy.channel.gpuve.try_to_post.post_dma_area = process("@libdir@/libinterdevcopy.so.1").mark("channel_gpuve_post_dma_area") {
+	direction = gpuve_dma_direction($arg1);
+	gpu_addr = $arg2;
+	ve_addr = $arg3;
+	size = $arg4;
+	result = $arg5;
+	index = $arg6;
+}
+
+probe libinterdevcopy.channel.gpuve.try_to_post.complete = process("@libdir@/libinterdevcopy.so.1").mark("channel_gpuve_try_to_post_complete") {
+	direction = gpuve_dma_direction($arg1);
+}
+
+probe libinterdevcopy.channel.gpuve.try_to_complete.start = process("@libdir@/libinterdevcopy.so.1").mark("channel_gpuve_try_to_complete_start") {
+	number_of_dma_requests = $arg1;
+	already_transferred = $arg2;
+}
+
+probe libinterdevcopy.channel.gpuve.try_to_complete.poll_dma_result = process("@libdir@/libinterdevcopy.so.1").mark("channel_gpuve_poll_dma_result") {
+	index = $arg1;
+	result = $arg2;
+}
+
+probe libinterdevcopy.channel.gpuve.try_to_complete.return = process("@libdir@/libinterdevcopy.so.1").mark("channel_gpuve_try_to_complete_return") {
+	number_of_dma_requests = $arg1;
+	already_transferred = $arg2;
+}
+
+probe libinterdevcopy.channel.gpuve.try_to_complete.dma_exception = process("@libdir@/libinterdevcopy.so.1").mark("channel_gpuve_dma_exception") {
+	index = $arg1;
+	result = $arg2;
+}

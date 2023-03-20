@@ -1,0 +1,67 @@
+# options
+# systemtap support
+%bcond_without libinterdevcopy_systemtap
+# cuda version
+%global _cuda_rpm_version 11-7
+
+Name:		@PACKAGE@
+Version:	@VERSION@
+Release:	@RELEASE@%{?dist}
+Summary:	Inter-device data copy library
+Group:		System Environment/Libraries
+Source0:	@PACKAGE@-@VERSION@.tar.gz
+Vendor:		NEC Corporation
+License:	BSD
+
+%description
+A library for data transfer between devices including
+host, CUDA GPU and Vector Engine.
+
+%package	devel
+License:	BSD
+Summary:	libinterdevcopy header files
+BuildRequires:  cuda-cudart-devel-%{?_cuda_rpm_version}
+BuildRequires:  veoffload-aveo-devel > 2.11.0-1
+%if %{with libinterdevcopy_systemtap}
+BuildRequires:  systemtap-sdt-devel
+%endif
+
+%description	devel
+A header file for interdevcopy.
+
+
+%define _prefix @prefix@
+%define _libdir @libdir@
+%define _includedir @includedir@
+%define tapsetdir %{_systemtap_tapsetdir}
+
+%prep
+%setup -q
+
+%build
+
+%if %{with libinterdevcopy_systemtap}
+%configure  --enable-dtrace --with-tapsetdir=%{tapsetdir}
+%else
+%configure
+%endif
+make
+
+%install
+make install DESTDIR=${RPM_BUILD_ROOT}
+sh -c "rm -f ${RPM_BUILD_ROOT}%{_libdir}/lib*.la"
+
+%post -p /sbin/ldconfig
+%postun -p /sbin/ldconfig
+
+%files
+%{_libdir}/lib*.so.*
+%config(noreplace) /etc/ld.so.conf.d/*
+%if %{with libinterdevcopy_systemtap}
+%{tapsetdir}/*.stp
+%endif
+
+%files devel
+%{_includedir}/interdevcopy.h
+%{_libdir}/*.so
+%{_libdir}/*.a

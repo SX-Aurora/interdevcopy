@@ -1,0 +1,22 @@
+provider libinterdevcopy {
+  probe devicememory_register_type(int);
+  probe devicememory_create(long, long, string, long);
+  probe channel_register_type(string, string, string);
+  probe channel_create(long, long, long);
+  probe channel_destination_type_not_found(string);
+  probe channel_source_type_not_found(string, string);
+  probe channel_getter_found(string, string, string);
+  probe channel_gpuve_register_gpu_mem(long, long, long, long);
+  probe channel_gpuve_register_ve_mem(long, long, long);
+  probe channel_gpuve_push_dma_addr_start(long, long, long, long);
+  probe channel_gpuve_push_dma_addr(long, long, long, long);
+  probe channel_gpuve_copy_first_gpu_area(long, long, long, long);
+  probe channel_gpuve_try_to_post_start(int, long);
+  probe channel_gpuve_pop_request_area(int);
+  probe channel_gpuve_post_dma_area(int, long, long, long, int, int);
+  probe channel_gpuve_try_to_post_complete(int);
+  probe channel_gpuve_try_to_complete_start(long, long);
+  probe channel_gpuve_poll_dma_result(int, int);
+  probe channel_gpuve_try_to_complete_return(long, long);
+  probe channel_gpuve_dma_exception(int, int);
+};

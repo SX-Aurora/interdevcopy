@@ -1,0 +1,10 @@
+LIBINTERDEVCOPY_1 {
+  global:
+    interdevcopy_copy;
+    interdevcopy_create_channel;
+    interdevcopy_create_memory_region;
+    interdevcopy_destroy_channel;
+    interdevcopy_destroy_memory_region;
+  local:
+    *;
+};
